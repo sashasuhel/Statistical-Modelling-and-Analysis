@@ -1,0 +1,202 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.7cm]{geometry}
+
+\usepackage{pgf}
+\usepackage{pgfpages}
+
+\pgfpagesdeclarelayout{boxed}
+{\edef\pgfpageoptionborder{0pt}}
+{
+  \pgfpagesphysicalpageoptions
+  {%
+    logical pages=1,%
+  }
+  \pgfpageslogicalpageoptions{1}
+  {
+    border code=\pgfsetlinewidth{0.4pt}\pgfstroke,%
+    border shrink=\pgfpageoptionborder,%
+    resized width=.95\pgfphysicalwidth,%
+    resized height=.95\pgfphysicalheight,%
+    center=\pgfpoint{.5\pgfphysicalwidth}{.5\pgfphysicalheight}%
+  }%
+}
+% for figure captionsThe likelihood function is,
+\usepackage{caption}
+
+% for links
+\usepackage{hyperref}
+
+% to include images
+\usepackage{graphicx}
+
+% for equation environments
+\usepackage{amsmath, amssymb}
+
+% for code snippets
+\usepackage{listings}
+
+%for math functions
+\usepackage{mathtools}
+
+% For header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % clears default style
+\setlength{\headheight}{13.6pt}
+\lhead{F21SA Statistical Modelling and Analysis}
+\lfoot{Sasha Fathima Suhel (sfs2001)}
+\cfoot{Page \thepage}
+\rfoot{HWU ID: H00410394}
+\renewcommand{\headrulewidth}{.5pt}
+\renewcommand{\footrulewidth}{.5pt}
+
+\begin{document}
+
+\begin{center}
+    \huge\textbf{F21SA Assessed Project}
+\end{center}
+\section{Introduction}
+The file sizes $\underline{x}$, is used as a frequency to analyze the internet network data with the help of the Pareto statistical model. It's used for weighing the pros and cons of solving situations in conflict which enables you to concentrate on the solutions that will bring you the greatest benefits.
+\begin{equation}
+f\left(x, \alpha, x_{m}\right)= \begin{cases}\frac{\alpha x_{m}^{\alpha}}{x^{\alpha+1}}, & x \geq x_{m} \\ 0, & x<x_{m}\end{cases}
+\end{equation}
+In order to estimate future file sizes, the model is fitted to the data using maximum likelihood estimation of the distribution's scale parameter $\sigma$. The likelihood that file size variance will increase in the upcoming months is calculated, and the robustness of the finding is examined.
+
+\section{Data Summary}
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \includegraphics[width = 6.5cm]{Histogram.png}
+  \captionof{figure}{Histogram of File sizes}
+\end{minipage}%
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \footnotesize
+    \begin{lstlisting}[caption={Summary \& Standard Deviation},captionpos=b]
+> cat("Network Data\n")
+Network Data
+
+> cat("Mean:", mean(myData), "kB\n")
+Mean: 1621.621 kB
+
+> cat("Standard deviation:", sd(myData), "kB\n")
+Standard deviation: 2552.119 kB
+
+> cat("Median:", median(myData), "kB\n")
+Median: 1285.402 kB
+
+> cat("Quantiles:", quantile(myData), "(all kB)\n\n")
+Quantiles: 1000.16 1098.374 1285.402 
+           1637.462 77538.43 (all kB)
+           
+> cat("Skewness:", skewness(myData))
+Skewness: 26.53065
+    \end{lstlisting}
+\end{minipage}
+\par The histogram and numerical summary, including the sample mean, standard deviation, median, and other quartiles, have been obtained from Figure 1 and Listing 1. Quartiles such as Q1 (1098.374) and Q3 (1637.462) have been found as well.
+\par From the above skewness, we can conclude that the above data is positivly skewed which shows that the mean is greater than the median. This indicates that majority of the file sizes sent over were on the lower size(kb) limit while fewer outliers with higher file sizes(kb) are lower in frequency.
+
+\section{Maximum Likelihood Estimation (MLE) for $\hat{\alpha}$}
+A method for estimating the parameters of a particular distribution using some observed data is the likelihood function. By determining specific values for the mean and variance that make the observation the most likely outcome, MLE can be used to estimate the sample variance using a small sample of the distribution. The likelihood function is,
+\begin{align*}
+\mathcal{L}(x,\alpha,x_m) &= \prod\limits^n_{i=1} {\frac{\alpha x_i^\alpha}{x_i^{\alpha+1}}} =\alpha^n{x_i^{n\alpha}}\prod\limits^n_{i=1} {\frac{1}{x_i^{\alpha+1}}}\\
+&=\ln \left(\left(\alpha x_m^\alpha\right)^m\right)- \left(\sum_{i=1}^m\ln x_i^{\alpha+1}\right) =m \ln \left(\alpha x_m^\alpha\right)- \left(\sum_{i=1}^m\ln x_i^{\alpha+1}\right)\\
+&=m \ln \alpha+m \alpha \ln \left(x_m\right)-\ln \left(x_m\right)-\sum_{i=1}^m\ln x_i^{\alpha+1}
+\end{align*}
+For $\alpha$, we set the partial derivative of $\ell$ with respect to $\alpha$ equal to 0:
+$$
+\begin{aligned} 
+&\frac{\partial}{\partial \alpha}(m \ln \alpha)+\frac{\partial}{\partial \alpha}\left(m \alpha \ln x_m\right)-\frac{\partial}{\partial \alpha}\left((\alpha+1)\sum_{i=1}^m\ln x_i\right)\\
+&=\frac{m}{\hat{a}}+m \ln \left(x_m\right)- \sum_{i=1}^m\ln x_i=0;\ =\frac{m}{\hat{a}}= \sum_{i=1}^m\ln x_i-m \ln x_m\\
+Therefore, \rightarrow \hat{\alpha} &= {\frac{m}{\sum_{i=1}^m\ln x_i-m \ln {x_m}}} \label{eq:MLE} \\
+\end{aligned}
+$$
+
+\section{Fisher's information for I($\alpha$) with the distribution of $\hat{\alpha}$}
+\label{eq:Fishers}
+\begin{align*}
+I(\alpha) &= -\biggl[E\left[{\frac{\partial^{2}\ell}{\partial\alpha^{2}}}\right]\biggr] \\
+I(\alpha) &= -{\frac{\partial^2}{\partial \alpha^2}}\Biggl[{\frac{m}{\alpha}}+m\ln{x_m} -{\sum_{i=1}^{m}\ln{x_i}}\Biggr]\\
+I(\alpha) &= -\biggl[{\frac{-m}{\alpha^{2}} + 0}\biggr]\\
+I(\alpha) &= {\frac{m}{\alpha^2}}  
+\end{align*}
+For large m, $\hat\alpha$ is approximately distributed as $N(\alpha,\frac{1}{I(\alpha)})$. In this case that is $N(\alpha,\frac{\alpha^2}{m})$
+
+\section{Using the results of \ref{eq:MLE} and \ref{eq:Fishers} , finding  $\hat{\alpha}=\hat{\alpha}(\underline x)$ to approximate 95\% equal-tailed confidence interval $I=[\alpha_{L}(\underline x),\alpha_{U}(\underline x)]$ for $\alpha$}
+\begin{align*}
+[\alpha_{L}(\underline x),\alpha_{U}(\underline x)] &= {\hat{\alpha}}\pm({Z_{\frac{\alpha}{2}} * ese(\hat{\alpha})}) \\
+\end{align*}
+Fromg the above MLE equation, we can derive the following;
+\begin{align*}
+\hat{\alpha} &= {\frac{m}{\sum_{i=1}^{m}\ln x_i - m\ln{x_m}}}\\
+\end{align*}
+The $\hat{\alpha}$ value derived from the equation is 2.793079. [Refer Appendix:Code]
+\begin{align*}
+ese(\hat{\alpha}) &= \frac{1}{\sqrt{I(\hat{\alpha})}}\\
+\end{align*}
+The $ese(\hat{\alpha})$ value derived from the equation is 0.08832491. [Refer Appendix:Code]\\
+Substituting the values of $\hat\alpha$ and $ese(\hat\alpha)$ in  and with $Z_{\frac{\alpha}{2}} = 1.96$ taken from NCST Table 5, the confidence interval is
+\begin{align*}
+I_{0.95} &= [\alpha_{L}(\underline x),\alpha_{U}(\underline x)] \approx [ 2.619965 , 2.966192 ]
+\end{align*}
+ 
+\section{Estimation of the distrubtion $Y'$}
+This section aims to Calculate, Predict and Estimate $Y'$, the mean file sizes for the next 1000 files.
+\par By letting $X'_{i}\sim\text{Pareto}(\hat{\alpha},x_m)$, and $Y' = \frac{1}{1000}\sum_{i=1}^{1000}X'_{i}$ be the predicted mean file sizesfor the next 1000 files,
+R is used to simulate the predicted file sizes and estimate the distribution of $Y'$.\\
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \includegraphics[width = 6.5cm]{Y_dash.png}
+  \captionof{figure}{Histogram of File sizes}
+\end{minipage}%
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \footnotesize
+    \begin{lstlisting}[caption={Summary \& Standard Deviation},captionpos=b]
+> cat("Network Data\n")
+Network Data
+
+> cat("Mean:", mean(y_dash), "kB\n")
+Mean: 1557.879 kB
+
+> cat("Standard deviation:", sd(y_dash), "kB\n")
+Standard deviation: 33.22118 kB
+
+> cat("Median:", median(y_dash), "kB\n")
+Median: 1555.585 kB
+
+> cat("Quantiles:", quantile(y_dash), "(all kB)\n")
+Quantiles: 1462.642 1535.643 1555.585 
+           1576.872 1944.324 (all kB)
+           
+> cat("Skewness:", skewness(y_dash) )
+Skewness: 1.179502
+    \end{lstlisting}
+\end{minipage}
+\par The histogram and numerical summaries, including the sample mean, standard deviation, median, and other quartiles, have been calculated from Figure 2 and Listing 2. The histogram and numerical summaries, including the sample mean, standard deviation, median, and other quartiles, have been calculated from Figure 2 and Listing 2. Quartiles such as Q1 (1535.643) and Q3 (1576.872) have been found as well.
+\par From the above skewness, we can conclude that the above data is normally skewed distribution which shows that the mean in this case is almost equal to the median with minute differences. This tells us that the file sizes are roughly around ~[1550kB].
+
+\section{Maximum Possible Limit}
+
+\par The maximum possible limit is set to the 99\% so that all the outliers are removed,in such a way that 99\% of
+files would be accepted by the network.
+The qPareto function is utilized [qPareto(p(0.99),t(1000),$\alpha$)(2.793079)] from Maximum Likelihood Estimation(\ref{eq:MLE}).
+
+\par From this observation we can undertand that the MPL(Maximum Possible Limit) with the above calculation is 5200.627, which states that all the values under the value of the result(5200.627kB) will be accepted by the network removing all the outliers that are above 5200.627. [Refer Appendix:Code]
+
+\section{Conclusion}
+
+\par With the given data set from above we were able to understand the statistical summary analysis of the file sizes using the Pareto function. In this dataset the mean is more than the median which proves the distribution is positively skewed. When attempted to calculate the mean with more number of simulation with the appropriate function, it is seen that the distribution becomes normally skewed. From the histogram, it is evident that the mean and median are roughly the same.
+\par By calculating the 99\% limit of the total data, we are able to remove any of the outliers above the limit, allowing the network to accept the the files under the limit only.
+
+\begin{thebibliography}{}
+\bibitem{r}https://cran.r-project.org/web/packages/Pareto/Pareto.pdf
+\bibitem{r}https://online.stat.psu.edu/stat415/lesson/1/1.2
+\bibitem{r}Lindley, D. and Scott, W., 1995. New Cambridge Statistical Tables. 2nd ed. New York: Cambridge University Press.
+\bibitem{r}https://www.scribbr.com/statistics/skewness/ 
+\end{thebibliography}
+
+\newpage 
+\section{Appendix}
+\subsection{Appendices: Code}
+\lstinputlisting[language=R]{R_Report.R}
+\end{document}
